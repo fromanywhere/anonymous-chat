@@ -15,6 +15,10 @@ Server.prototype = {
         return this.units;
     },
 
+    getUnitInfo: function (unitId) {
+        return this.units[unitId];
+    },
+
     send: function (unitId, message) {
         this.units[unitId].receiveCallback(message);
     }

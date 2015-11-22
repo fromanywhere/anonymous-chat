@@ -7,8 +7,10 @@ function Unit(name) {
     this.cryptoPrivateKey = null;
     this.cryptoPublicKey = null;
 
+    this.server = server; // global
+
     this.generateCryptoKeys();
-    this.registerUnit(server); // global
+    this.registerUnit();
 }
 
 Unit.prototype = {
@@ -21,19 +23,26 @@ Unit.prototype = {
     registerUnit: function (server) {
         var _this = this;
 
-        server.registerUnit({
+        _this.server.registerUnit({
             id: _this.id,
             publicKey: _this.cryptoPublicKey,
             receiveCallback: function (message) {
                 var receivedMessage = _this.receiveMessage(message);
-                console.log("receive", receivedMessage);
+                console.log(_this.id, "received", receivedMessage);
             }
         });
     },
 
-    sendMessage: function (userPublicKey, message) {
-        var encryptedMessage = cryptico.encrypt(message, userPublicKey).cipher;
-        return encryptedMessage;
+    sendMessage: function (message) {
+        var userInfo = this.server.getUnitInfo(message.adresat);
+        var encryptedMessage = cryptico.encrypt(message.text, userInfo.publicKey).cipher;
+
+        console.log(this.id, "send", message); //debug only
+
+        this.server.send(
+            message.adresat,
+            encryptedMessage
+        );
     },
 
     receiveMessage: function (message) {

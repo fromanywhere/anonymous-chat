@@ -26,20 +26,9 @@
                 text: "messageSecret"
             };
 
-            var unitInfo = server.getRegisteredUnits();
+            console.log(server.getRegisteredUnits());
 
-            console.log(unitInfo);
-            console.log("send", message);
-
-            server.send(
-                unitInfo[message.adresat].id,
-                unit1.sendMessage(
-                    unitInfo[message.adresat].publicKey,
-                    message.text
-                )
-            );
-
-
+            unit1.sendMessage(message);
 
         </script>
 
