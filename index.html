@@ -1,0 +1,128 @@
+
+<html>
+
+    <head>
+
+        <script language="JavaScript" type="text/javascript" src="cryptico/jsbn.js"></script>
+        <script language="JavaScript" type="text/javascript" src="cryptico/random.js"></script>
+        <script language="JavaScript" type="text/javascript" src="cryptico/hash.js"></script>
+        <script language="JavaScript" type="text/javascript" src="cryptico/rsa.js"></script>
+        <script language="JavaScript" type="text/javascript" src="cryptico/aes.js"></script>
+        <script language="JavaScript" type="text/javascript" src="cryptico/api.js"></script>
+
+        <script language="JavaScript" type="text/javascript" src="js/server.js"></script>
+        <script language="JavaScript" type="text/javascript" src="js/unit.js"></script>
+
+        <script>
+
+            var server = new Server();
+            var unit1 = new Unit("unit1");
+            var unit2 = new Unit("unit2");
+            var unit3 = new Unit("unit3");
+            var unit4 = new Unit("unit4");
+
+            var message = {
+                adresat: "unit4",
+                text: "messageSecret"
+            };
+
+            var unitInfo = server.getRegisteredUnits();
+
+            console.log(unitInfo);
+            console.log("send", message);
+
+            server.send(
+                unitInfo[message.adresat].id,
+                unit1.sendMessage(
+                    unitInfo[message.adresat].publicKey,
+                    message.text
+                )
+            );
+
+
+
+        </script>
+
+<!--
+        <script>
+
+        function print(string)
+        {
+            document.write(string + "\n\n");
+        }
+
+        print("<h1>Unsigned:</h1>");
+
+        var PassPhrase = "The Moon is a Harsh Mistress.";
+        var Bits = 512;
+
+        print("Matt's passphrase: " + PassPhrase);
+        print("Bit length: " + Bits);
+
+        var MattsRSAkey = cryptico.generateRSAKey(PassPhrase, Bits);
+        var MattsPublicKeyString = cryptico.publicKeyString(MattsRSAkey);
+
+        print("Matt's public key string:");
+        print(MattsPublicKeyString);
+
+        var PlainText = "Matt, I need you to help me with my Starcraft strategy.";
+
+        print("Sam's message: " + PlainText);
+
+        var EncryptionResult = cryptico.encrypt(PlainText, MattsPublicKeyString);
+
+        print("The encrypted message:");
+        print(EncryptionResult.cipher);
+
+        var DecryptionResult = cryptico.decrypt(EncryptionResult.cipher, MattsRSAkey);
+
+        print("The decrypted message:");
+        print(DecryptionResult.plaintext);
+        print("DecryptionResult.signature: " + DecryptionResult.signature);
+
+        </script>
+-->
+    </head>
+<!--
+    <body style="font-family: monospace; white-space:pre;">
+
+    </body>-->
+
+    <body>
+
+    </body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
