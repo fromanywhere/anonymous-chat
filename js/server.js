@@ -20,6 +20,7 @@ Server.prototype = {
     },
 
     send: function (unitId, message) {
+    //console.log(unitId, message);
         this.units[unitId].receiveCallback(message);
     }
 }
