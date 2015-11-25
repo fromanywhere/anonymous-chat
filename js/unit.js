@@ -11,6 +11,8 @@ function Unit(name) {
 
     this.generateCryptoKeys();
     this.registerUnit();
+
+    this.messages = {};
 }
 
 Unit.prototype = {
@@ -33,56 +35,81 @@ Unit.prototype = {
     },
 
     sendMessage: function (message) {
-
-        console.log(this.id, "send", message); //debug only
-
-        this.server.send(
-            message.adresat,
-            message.text
-        );
+        //console.log(this.id, "send", message); //debug only
+        this.server.send(message);
     },
 
     receiveMessage: function (message) {
         var decryptedMessage = cryptico.decrypt(message, this.cryptoPrivateKey).plaintext;
         var parsedMessage = JSON.parse(decryptedMessage);
 
-        if (parsedMessage.adresat !== this.id) {
-            //console.log(this.id, "resend", parsedMessage.adresat, parsedMessage.text);
+        // если не мне, переслать дальше
+        if (parsedMessage.recipient !== this.id) {
             this.sendMessage(parsedMessage);
         } else {
-            console.log(this.id, "received", parsedMessage.text);
+            console.log(this.id, "received", parsedMessage);
+
+            // если мне, и есть инструкция по получению, выполнить
+            if (parsedMessage.type === "message" && parsedMessage.callback) {
+                this.sendMessage(parsedMessage.callback);
+            }
+
+            // если мне, и информация о выполнении, проверить статус
+            if (parsedMessage.type === "callback") {
+                if (this.messages[parsedMessage.content] === "sent") {
+                    this.messages[parsedMessage.content] = "delivered";
+                    console.log(this.id, "delivered", parsedMessage.content);
+                }
+            }
         }
     },
 
-    sendOriginalMessage: function (message) {
-        var chain = this.generateChain(message.adresat);
-        var userInfo = this.server.getUnitInfo(message.adresat);
+    sendOriginalMessage: function (messageParams) {
+        var _this = this;
+        var userInfo = this.server.getUnitInfo(messageParams.recipient);
+        var messageHash = SHA256(messageParams.content);
+
+        message.timestamp = Date.now();
+
+        if (message.type === "message") {
+            var callbackParams = {
+                recipient: _this.id,
+                type: "callback",
+                content: messageHash
+            }
+
+            var callbackMessage = {
+                recipient: callbackParams.recipient,
+                content: cryptico.encrypt(JSON.stringify(callbackParams), _this.cryptoPublicKey).cipher,
+                type: callbackParams.type
+            }
+
+            message.callback = this.embedMessage(callbackMessage, message.recipient, _this.id);
+        }
 
         var resultMessage = {
-            adresat: message.adresat,
-            text: cryptico.encrypt(JSON.stringify(message), userInfo.publicKey).cipher
+            recipient: messageParams.recipient,
+            content: cryptico.encrypt(JSON.stringify(messageParams), userInfo.publicKey).cipher,
+            type: messageParams.type
         };
 
-        chain.map(function (currentItem) {
+        var originalMessage = this.embedMessage(resultMessage, _this.id, messageParams.recipient);
 
-            userInfo = this.server.getUnitInfo(currentItem);
-            encryptedMessage = cryptico.encrypt(JSON.stringify(resultMessage), userInfo.publicKey).cipher;
+        console.log(_this.id, "sent", messageParams.content, messageHash, "to", messageParams.recipient);
 
-            resultMessage = {
-                adresat: currentItem,
-                text: encryptedMessage
-            }
-        });
+        this.messages[messageHash] = "sent";
+        this.sendMessage(originalMessage);
 
-        this.sendMessage(resultMessage);
     },
 
-    generateChain: function (adresatUnitId) {
+    embedMessage: function (message, senderId, recipientId) { //recipientUnitId
         var _this = this;
+        var resultMessage = message;
 
+        // get chain
         var registeredUnits = this.server.getRegisteredUnits();
         var filteredUnits = Object.keys(registeredUnits).filter(function (value) {
-            return value !== _this.id && value !== adresatUnitId;
+            return value !== senderId && value !== recipientId;
         })
 
         // try to randomize
@@ -94,6 +121,17 @@ Unit.prototype = {
         });
         // /try to randomize
 
-        return filteredUnits;
+        filteredUnits.map(function (currentItem) {
+
+            userInfo = this.server.getUnitInfo(currentItem);
+            encryptedMessage = cryptico.encrypt(JSON.stringify(resultMessage), userInfo.publicKey).cipher;
+
+            resultMessage = {
+                recipient: currentItem,
+                content: encryptedMessage
+            }
+        });
+
+        return resultMessage;
     }
 }

@@ -26,65 +26,17 @@
             var unit8 = new Unit("unit8");
 
             var message = {
-                adresat: "unit8",
-                text: "messageSecret"
+                recipient: "unit8",
+                type: "message",
+                content: "messageSecret"
             };
-
-            console.log(server.getRegisteredUnits());
 
             unit1.sendOriginalMessage(message);
 
         </script>
-
-<!--
-        <script>
-
-        function print(string)
-        {
-            document.write(string + "\n\n");
-        }
-
-        print("<h1>Unsigned:</h1>");
-
-        var PassPhrase = "The Moon is a Harsh Mistress.";
-        var Bits = 512;
-
-        print("Matt's passphrase: " + PassPhrase);
-        print("Bit length: " + Bits);
-
-        var MattsRSAkey = cryptico.generateRSAKey(PassPhrase, Bits);
-        var MattsPublicKeyString = cryptico.publicKeyString(MattsRSAkey);
-
-        print("Matt's public key string:");
-        print(MattsPublicKeyString);
-
-        var PlainText = "Matt, I need you to help me with my Starcraft strategy.";
-
-        print("Sam's message: " + PlainText);
-
-        var EncryptionResult = cryptico.encrypt(PlainText, MattsPublicKeyString);
-
-        print("The encrypted message:");
-        print(EncryptionResult.cipher);
-
-        var DecryptionResult = cryptico.decrypt(EncryptionResult.cipher, MattsRSAkey);
-
-        print("The decrypted message:");
-        print(DecryptionResult.plaintext);
-        print("DecryptionResult.signature: " + DecryptionResult.signature);
-
-        </script>
--->
     </head>
-<!--
-    <body style="font-family: monospace; white-space:pre;">
 
-    </body>-->
-
-    <body>
-
-    </body>
-
+    <body></body>
 </html>
 
 
