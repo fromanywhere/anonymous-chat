@@ -13,6 +13,7 @@ function Unit(name) {
     this.registerUnit();
 
     this.messages = {};
+    this.receiveCallback = function () {};
 }
 
 Unit.prototype = {
@@ -34,8 +35,12 @@ Unit.prototype = {
         });
     },
 
+    registerReceiveCallback: function (callback) {
+        this.receiveCallback = callback;
+    },
+
     sendMessage: function (message) {
-        //console.log(this.id, "send", message); //debug only
+        console.log(this.id, "send", message); //debug only
         this.server.send(message);
     },
 
@@ -47,18 +52,28 @@ Unit.prototype = {
         if (parsedMessage.recipient !== this.id) {
             this.sendMessage(parsedMessage);
         } else {
-            console.log(this.id, "received", parsedMessage);
+            //!console.log(this.id, "received", parsedMessage);
+
+            // если мне
+            if (parsedMessage.type === "message") {
+                setTimeout(function () { // temporary
+                    this.receiveCallback("received", parsedMessage.content);
+                }.bind(this), 500);
+            }
 
             // если мне, и есть инструкция по получению, выполнить
             if (parsedMessage.type === "message" && parsedMessage.callback) {
-                this.sendMessage(parsedMessage.callback);
+                setTimeout(function () { // temporary
+                    this.sendMessage(parsedMessage.callback);
+                }.bind(this), 1000);
             }
 
             // если мне, и информация о выполнении, проверить статус
             if (parsedMessage.type === "callback") {
                 if (this.messages[parsedMessage.content] === "sent") {
                     this.messages[parsedMessage.content] = "delivered";
-                    console.log(this.id, "delivered", parsedMessage.content);
+                    //!console.log(this.id, "delivered", parsedMessage.content);
+                    this.receiveCallback("delivered", parsedMessage.content);
                 }
             }
         }
@@ -67,11 +82,9 @@ Unit.prototype = {
     sendOriginalMessage: function (messageParams) {
         var _this = this;
         var userInfo = this.server.getUnitInfo(messageParams.recipient);
-        var messageHash = SHA256(messageParams.content);
+        var messageHash = SHA256(messageParams.content + messageParams.timestamp);
 
-        message.timestamp = Date.now();
-
-        if (message.type === "message") {
+        if (messageParams.type === "message") {
             var callbackParams = {
                 recipient: _this.id,
                 type: "callback",
@@ -84,7 +97,7 @@ Unit.prototype = {
                 type: callbackParams.type
             }
 
-            message.callback = this.embedMessage(callbackMessage, message.recipient, _this.id);
+            messageParams.callback = this.embedMessage(callbackMessage, messageParams.recipient, _this.id);
         }
 
         var resultMessage = {
@@ -95,11 +108,10 @@ Unit.prototype = {
 
         var originalMessage = this.embedMessage(resultMessage, _this.id, messageParams.recipient);
 
-        console.log(_this.id, "sent", messageParams.content, messageHash, "to", messageParams.recipient);
+        //!console.log(_this.id, "sent", messageParams.content, messageHash, "to", messageParams.recipient);
 
         this.messages[messageHash] = "sent";
         this.sendMessage(originalMessage);
-
     },
 
     embedMessage: function (message, senderId, recipientId) { //recipientUnitId

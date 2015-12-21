@@ -16,27 +16,121 @@
         <script>
 
             var server = new Server();
-            var unit1 = new Unit("unit1");
+
             var unit2 = new Unit("unit2");
             var unit3 = new Unit("unit3");
             var unit4 = new Unit("unit4");
             var unit5 = new Unit("unit5");
             var unit6 = new Unit("unit6");
             var unit7 = new Unit("unit7");
-            var unit8 = new Unit("unit8");
-
-            var message = {
-                recipient: "unit8",
-                type: "message",
-                content: "messageSecret"
-            };
-
-            unit1.sendOriginalMessage(message);
 
         </script>
+
+        <style type="text/css">
+            html, body {
+                padding: 0;
+                margin: 0;
+                font-family: Arial, sans-serif;
+                }
+
+            .wrapper {
+                display: flex;
+                height: 100vh;
+            }
+
+            .chat {
+                box-sizing: border-box;
+                float: left;
+                width: 50%;
+                margin-top: 40px;
+                height: calc(100vh - 80px);
+                position: relative;
+                overflow: auto;
+                border-right: 1px #999 solid;
+                }
+                .chat + .chat {
+                    border-left: 1px #999 solid;
+                    border-right: 0 none;
+                    }
+
+            .chat_feed-item:before,
+            .chat_feed-item:after {
+                content: '';
+                display: table;
+            }
+
+            .chat_feed-item:after {
+                clear: both;
+            }
+
+            .chat_feed-item_content {
+                border-radius: 5px;
+                margin: 5px;
+                padding: 5px;
+            }
+
+            .chat_feed-item.__mine .chat_feed-item_content {
+                float: left;
+                background-color: rgba(0, 0, 255, 0.2);
+                border-top-left-radius: 0;
+                }
+
+            .chat_feed-item.__recipient .chat_feed-item_content {
+                float: right;
+                background-color: rgba(0, 255, 0, 0.2);
+                border-top-right-radius: 0;
+                }
+
+            .chat_feed-item.__delivered .chat_feed-item_content:after {
+                content: '✔︎';
+                padding: 0 5px;
+            }
+
+            .chat_footer {
+                position: fixed;
+                bottom: 5px;
+                width: 50%;
+                height: 30px;
+                text-align: center;
+                }
+
+            .chat_header {
+                position: fixed;
+                top: 5px;
+                width: 50%;
+                height: 30px;
+                line-height: 30px;
+                text-align: center;
+                }
+
+            .chat_input {
+                width: 94%;
+                height: 30px;
+                }
+        </style>
     </head>
 
-    <body></body>
+    <body>
+        <div class="wrapper">
+            <div class="chat" data-name="unit1" data-recipient="unit8">
+                <div class="chat_header"></div>
+                <div class="chat_feed"></div>
+                <div class="chat_footer">
+                    <input type="text" class="chat_input"/>
+                </div>
+            </div>
+
+            <div class="chat" data-name="unit8" data-recipient="unit1">
+                <div class="chat_header"></div>
+                <div class="chat_feed"></div>
+                <div class="chat_footer">
+                    <input type="text" class="chat_input"/>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="js/ui.js"></script>
+    </body>
 </html>
 
 
